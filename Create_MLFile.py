@@ -25,11 +25,11 @@ from Utilities import read_config_file
 def main_body():
     #parser = argparse.ArgumentParser(prog='Create_MLFile.py', usage='Create_MLFile.py <label> <datafiletype> <outputdir> [--feedback <Path to feedback passage dict>]', description='Script to create labelled ML file')
 
-    global parent_location; global txt_location; global json_location
-    parent_location, txt_location, json_location = read_config_file("./config.cfg")
+    global parent_location; global txt_location; global json_location; global pickle_location
+    parent_location, txt_location, json_location, pickle_location = read_config_file("./config.cfg")
 
     parser = argparse.ArgumentParser(prog='Create_MLFile.py',
-                                     usage='Create_MLFile.py <label> <datafiletype> <outputdir> <passagedictPath> <selectedFeatJSON> <allowed_words>',
+                                     usage='Create_MLFile.py <label> <datafiletype> <outputdir> <passagedictPath> <selectedFeatJSON> <allowed_words> <granularity>',
                                      description='Script to create labelled ML file')
     parser.add_argument('label', help='The class (it may be a extra test or a extra type) for current data file')
     parser.add_argument('datafiletype', help='The type of the ML file that needs to be created - training, test or openaccess')
@@ -37,10 +37,10 @@ def main_body():
     parser.add_argument('passagedictPath', help='The directory in which the passage dict JSON file is located')
     parser.add_argument('selectedFeatJSON', help='The JSON file that contains the selected dep parse features')
     parser.add_argument('allowedWords', help='Pickle file that lists all words allowed to be lexical features')
+    parser.add_argument('granularity', help='Granularity level to be used for allowedWords dict')
     #parser.add_argument('-f', '--feedback', help='Path to the feedback passage dict json file')  # Optional arg
 
     args = parser.parse_args()
-    pickle_init(args.allowedWords)
 
     allowed_labels = ['reqs', 'dnreqs', 'RNAi', 'KO', 'omission', 'DKO', 'DRNAi']
     if args.label not in allowed_labels:
@@ -54,9 +54,16 @@ def main_body():
         print "Please try again!"
         exit()
 
+    allowed_granularity = ["ARTICLE", "INSTANCE"]
+    if str(args.granularity).strip().upper() not in allowed_granularity:
+        print "The given granularity is not allowed! Granularity can only be any one of \'ARTICLE\', \'INSTANCE\'"
+        print "Please try again!"
+        exit()
+
     label = args.label
     passagedictfile = args.passagedictPath
     fname = ntpath.basename(args.passagedictPath).strip()
+    pickle_init(args.allowedWords, str(args.granularity).strip().upper(), label)
 
     if args.datafiletype == "Training":
         outfilename = "vw_" + label + "_" + args.datafiletype + "_File_NoOpenAccess.txt"
@@ -109,19 +116,13 @@ def main_body():
                     vw_tag = contg_psg_dict["tag"]
                     lex_feat_str = create_lexical_features(contg_psg_dict["textOfInterest"])
                     depparse_feat_str = create_depParse_featuresStr(pmid, sent_ids, matched_prots, selecteddict[label])
-                    if len(lex_feat_str) == 0:  # If there are no lexical features (i.e. no words) in a passage, then there could not be any viable depparse features extracted from that psg as well
-                        num_rec_skipped += 1
-                        continue
+                    #if len(lex_feat_str) == 0:  # If there are no lexical features (i.e. no words) in a passage, then there could not be any viable depparse features extracted from that psg as well
+                    #    num_rec_skipped += 1
+                    #    continue
                     if "weight" in contg_psg_dict:
-                        if len(depparse_feat_str) > 0:
-                            rec = vw_label + " " + contg_psg_dict["weight"] + " " + vw_tag + "|LexicalFeatures " + lex_feat_str + " |DepParseFeatures " + depparse_feat_str
-                        else:
-                            rec = vw_label + " " + contg_psg_dict["weight"] + " " + vw_tag + "|LexicalFeatures " + lex_feat_str
+                        rec = vw_label + " " + contg_psg_dict["weight"] + " " + vw_tag + "|LexicalFeatures " + lex_feat_str + " |DepParseFeatures " + depparse_feat_str
                     else:
-                        if len(depparse_feat_str) > 0:
-                            rec = vw_label + " " + vw_tag + "|LexicalFeatures " + lex_feat_str + " |DepParseFeatures " + depparse_feat_str
-                        else:
-                            rec = vw_label + " " + vw_tag + "|LexicalFeatures " + lex_feat_str
+                        rec = vw_label + " " + vw_tag + "|LexicalFeatures " + lex_feat_str + " |DepParseFeatures " + depparse_feat_str
                     myrecords.append(rec)
 
     print "No. of records that were skipped due to frequency pruning: ", num_rec_skipped
@@ -226,9 +227,10 @@ def getSentenceIds(train_instance_dict, fname):
     return sent_ids
 
 
-def pickle_init(allowedWordsLoc):
+def pickle_init(allowedWordsLoc, granularity, label):
     global allowed_words
-    allowed_words = pickle.load(open(allowedWordsLoc, "rb"))
+    allowed_words_dict = pickle.load(open(os.path.join(pickle_location, allowedWordsLoc), "rb"))
+    allowed_words = allowed_words_dict[granularity][label]
     # allowed_words = pickle.load(open("allowed_words_dict_1.p", "rb"))
 
 if __name__ == "__main__":

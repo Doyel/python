@@ -17,8 +17,8 @@ from Utilities import read_config_file, check_for_unicode, tokenizeOnHyphen
 # python Protein_Extractor_UniProtID.py pro.obo.txt
 
 def main_body():
-    global parent_location; global txt_location; global json_location
-    parent_location, txt_location, json_location = read_config_file("./config.cfg")
+    global parent_location; global txt_location; global json_location; global pickle_location
+    parent_location, txt_location, json_location, pickle_location = read_config_file("./config.cfg")
 
     parser = argparse.ArgumentParser(prog='Protein_Extractor_UniProtID', usage='Protein_Extractor_UniProtID.py <ontology_file>', description='Script to extract protein names from an ontology')
     parser.add_argument('ProtOntofile', help='Ontology file to be parsed')
@@ -256,7 +256,7 @@ def chkParens(string):
 
 
 def create_fst_BasicOps(protein_names):
-    stop_words_dict = pickle.load( open( "stop_words_dict.p", "rb" ) )
+    stop_words_dict = pickle.load(open(os.path.join(pickle_location, "stop_words_dict.p"), "rb" ) )
     a = fst.Acceptor(); syms = fst.SymbolTable(); ctr = 0
     for index, item in enumerate(protein_names):
         if len(item['name'].strip())==0: continue

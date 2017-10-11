@@ -23,8 +23,8 @@ from Utilities import read_config_file, check_for_unicode, tokenizeOnHyphen
 # python New_Protein_Detector_PdfArticles.py ./Minimized_Protein_Names_FST.fst ./SymbolTable_Protein_Names_FST.sym 19 ./Total_PubMedIds_John_NoOpenAccess.txt         ##### ./PubMedIDS_with_Extras.txt
 
 def __main__():
-    global parent_location; global txt_location; global json_location
-    parent_location, txt_location, json_location = read_config_file("./config.cfg")
+    global parent_location; global txt_location; global json_location; global pickle_location
+    parent_location, txt_location, json_location, pickle_location = read_config_file("./config.cfg")
 
     parser = argparse.ArgumentParser(prog='New_Protein_Detector_PdfArticles', usage='New_Protein_Detector_PdfArticles.py <FST file> <SymbolTable file> <Maximum Length of a protein name> <PubMedfilelist> [--file <Optional Filename to be parsed>]', description='Script to read the segmented sentences and recognize protein names')
     parser.add_argument('fst_file', help='Name of the binary FST file')
@@ -45,7 +45,7 @@ def read_dirs(fst_file, symboltable_file, max_prot_len, PubMedfilelist):
     global my_fst; global syms; global stopwords; global common_english_words
     my_fst = fst.read_std(fst_file); syms = fst.read_symbols(symboltable_file)
     dict_nameToid = pickle.load(open('dictionary_nameToUniProtId.p', 'rb')); max_ngram_len = 0
-    stopwords = pickle.load(open('stop_words_dict.p', 'rb'))
+    stopwords = pickle.load(open(os.path.join(pickle_location, 'stop_words_dict.p'), 'rb'))
     common_english_words = pickle.load(open('common_english_words_proteins_dict.p', 'rb'))
     rootDir = '/ua/ml-group/big-mechanism-project/PLEIADES/workDir/JSON_SENTENCE_ASSOCS'
     writeDir = '/ua/ml-group/big-mechanism-project/PLEIADES/workDir/protein_detect_output'

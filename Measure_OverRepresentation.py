@@ -14,6 +14,7 @@ import cPickle as pickle;
 import nltk
 from nltk.tokenize import word_tokenize
 from nltk.collocations import *
+from Utilities import read_config_file
 
 
 # python Measure_OverRepresentation.py <label> <psg_dict_loc> <prune_freq> <num_grams> [-s]
@@ -21,7 +22,9 @@ from nltk.collocations import *
 
 
 def main_body():
-    global stopwords
+    global stopwords; global parent_location; global txt_location; global json_location; global pickle_location
+    parent_location, txt_location, json_location, pickle_location = read_config_file("./config.cfg")
+
     parser = argparse.ArgumentParser(prog='Measure_OverRepresentation', usage='Measure_OverRepresentation.py <label> <psg_dict_loc> <prune_freq> <num_topngrams> [-s]', description='Script to measure overrepresentation')
     parser.add_argument('label', help='The class (it may be a extra test or a extra type) for which to measure overrepresentation')
     parser.add_argument('psg_dict_loc', help='The location where the passage_dict json files are present')
@@ -31,7 +34,7 @@ def main_body():
 
     args = parser.parse_args()
     #stopwords = corpus.stopwords.words('english')
-    stopwords = pickle.load(open('stop_words_dict.p', 'rb'))
+    stopwords = pickle.load(open(os.path.join(pickle_location, 'stop_words_dict.p'), 'rb'))
 
     allowed_labels = ['reqs', 'dnreqs', 'RNAi', 'KO', 'omission', 'DKO', 'DRNAi']
     if args.label not in allowed_labels:

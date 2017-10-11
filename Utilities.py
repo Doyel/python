@@ -81,7 +81,10 @@ def read_config_file(config_path):
             if parts[0].strip() == "TXT":
                 txt_folder = parts[1].strip()
                 txt_path = os.path.join(parent_path, txt_folder)
-    return parent_path, txt_path, json_path
+            if parts[0].strip() == "PICKLE":
+                pickle_folder = parts[1].strip()
+                pickle_path = os.path.join(parent_path, pickle_folder)
+    return parent_path, txt_path, json_path, pickle_path
 
 
 def check_for_unicode(mystring):

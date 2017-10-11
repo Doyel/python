@@ -19,8 +19,8 @@ from Utilities import read_config_file
 # python Frequency_Prune.py Mark_Training_Set_PubMedIds_Jul7_NoOpenAccess.txt PubMedIDS_with_Extras_OpenAccess.txt 10
 
 def main_body():
-    global stopwords; global parent_location; global txt_location; global json_location
-    parent_location, txt_location, json_location = read_config_file("./config.cfg")
+    global stopwords; global parent_location; global txt_location; global json_location; global pickle_location
+    parent_location, txt_location, json_location, pickle_location = read_config_file("./config.cfg")
 
     parser = argparse.ArgumentParser(prog='Frequency_Prune', usage='Frequency_Prune.py <PubMedIdList NOT in OA> <PubMedIdList in OA> <count>', description='Script to create a dict having words that occur less than k times')
     parser.add_argument('PubMedfilelistNOTOA', help='File listing the training PubMed ids to be processed that are NOT in OpenAccess')
@@ -28,18 +28,18 @@ def main_body():
     parser.add_argument('count', help='Count of words we need to throw away')
 
     args = parser.parse_args()
-    stopwords = pickle.load(open('stop_words_dict.p', 'rb'))
+    stopwords = pickle.load(open(os.path.join(pickle_location, 'stop_words_dict.p'), 'rb'))
     pruned_filename = "pruned_words_dict_" + str(args.count) + ".p"
     allowed_filename = "allowed_words_dict_" + str(args.count) + ".p"
     allowed_alpha_filename = "allowed_words_alphabet_dict_" + str(args.count) + ".p"
 
-    if os.path.isfile("all_words_dict.p"):
+    if os.path.isfile(os.path.join(pickle_location, "all_words_dict.p")):
         print "Found - all_words_dict.p!"
-        myworddict = pickle.load(open("all_words_dict.p", "rb"))
+        myworddict = pickle.load(open(os.path.join(pickle_location, "all_words_dict.p"), "rb"))
 
         create_pickled_files(myworddict, pruned_filename, allowed_filename, allowed_alpha_filename, int(args.count))
     else:
-        print "The dictionary - all_words_dict.p was not found in current directory. Creating a new one!"
+        print "The dictionary - all_words_dict.p was not found in the pickles directory. Creating a new file!"
         myworddict = Counter()
 
         sentDirOA = os.path.join(parent_location, 'JSON_SENTENCE_ASSOCS_OpenAccess')
@@ -98,7 +98,7 @@ def main_body():
                     countdict = Counter(words)
                     myworddict = myworddict + countdict
 
-        pickle.dump(myworddict, open("all_words_dict.p", "wb"))
+        pickle.dump(myworddict, open(os.path.join(pickle_location, "all_words_dict.p"), "wb"))
         create_pickled_files(myworddict, pruned_filename, allowed_filename, allowed_alpha_filename, int(args.count))
 
 
@@ -172,9 +172,9 @@ def create_pickled_files(myworddict, pruned_filename, allowed_filename, allowed_
     create_dict(allowed_words, allowed_words_dict)
     print "No. of chars that are keys in the allowed words alphabet dict: ", len(allowed_words_dict.keys())
 
-    pickle.dump(pruned_words, open(pruned_filename, "wb"))
-    pickle.dump(allowed_words, open(allowed_filename, "wb"))
-    pickle.dump(allowed_words_dict, open(allowed_alpha_filename, "wb"))
+    pickle.dump(pruned_words, open(os.path.join(pickle_location, pruned_filename), "wb"))
+    pickle.dump(allowed_words, open(os.path.join(pickle_location, allowed_filename), "wb"))
+    pickle.dump(allowed_words_dict, open(os.path.join(pickle_location, allowed_alpha_filename), "wb"))
 
 
 def isPunct(mychar):

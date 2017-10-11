@@ -40,12 +40,12 @@ def main_body():
 
 def fst_init(fst_file, symboltable_file):
     global my_fst; global syms; global stopwords; global common_english_words
-    global parent_location; global txt_location; global json_location
-    parent_location, txt_location, json_location = read_config_file("./config.cfg")
+    global parent_location; global txt_location; global json_location; global pickle_location
+    parent_location, txt_location, json_location, pickle_location = read_config_file("./config.cfg")
 
     my_fst = fst.read_std(os.path.join(parent_location, "FST_files", fst_file))
     syms = fst.read_symbols(os.path.join(parent_location, "FST_files", symboltable_file))
-    stopwords = pickle.load(open('stop_words_dict.p', 'rb'))
+    stopwords = pickle.load(open(os.path.join(pickle_location, 'stop_words_dict.p'), 'rb'))
     common_english_words = pickle.load(open('common_english_words_proteins_dict.p', 'rb'))
 
 

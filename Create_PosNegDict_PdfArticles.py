@@ -18,8 +18,8 @@ from Utilities import read_config_file
 
 def main_body():
     global DatumKBdict; global id_to_proteins; global myfile_data
-    global parent_location; global txt_location; global json_location
-    parent_location, txt_location, json_location = read_config_file("./config.cfg")
+    global parent_location; global txt_location; global json_location; global pickle_location
+    parent_location, txt_location, json_location, pickle_location = read_config_file("./config.cfg")
 
     parser = argparse.ArgumentParser(prog='Create_PosNegDict', usage='Create_PosNegDict_PdfArticles.py <label> <PubMedfilelist> <matchfiles_dir_path> <segmented_sent_dir_path>', description='Script to create dictionaries for pos and neg proteins wrt the label')
     parser.add_argument('label', help='The field we are trying to predict')
